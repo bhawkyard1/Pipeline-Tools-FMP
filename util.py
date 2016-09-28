@@ -21,7 +21,7 @@ def deleteProject ( _path ):
 def backupProject ( _path ):	
 	day = datetime.date.today()
 	hour = datetime.datetime.now()
-	stamp = "[BACKUP:" + str(day.year) + ":" + str(day.month) + ":" + str(day.day) + "|" + str(hour.hour) + "h:" + str(hour.minute) + "m:" + str(hour.second) + "s]"
+	stamp = "(BACKUP-" + str(day.year) + "-" + str(day.month) + "-" + str(day.day) + "-" + str(hour.hour) + "h" + str(hour.minute) + "m" + str(hour.second) + "s)"
 	
 	print "Backing up project " + _path + " to " + _path + stamp
 	
@@ -67,6 +67,6 @@ def setConfigValue( _path, _key, _value ):
     #Move new file
     shutil.move(fname, os.path.abspath( _path ) )
 
-#createProject( os.path.expanduser("~/"), "my_second_project" )
-#backupProject( os.path.expanduser("~/") + "my_second_project")
+createProject( os.path.expanduser("~/"), "my_second_project" )
+backupProject( os.path.expanduser("~/") + "my_second_project")
 setConfigValue( "config.txt", "PROJECT_ROOT", "ben" )
