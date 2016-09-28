@@ -1,3 +1,5 @@
+import os
+
 def lev( _str1, _str2 ):
 	m = len( _str1 )
 	n = len( _str2 )
@@ -41,6 +43,22 @@ def lev( _str1, _str2 ):
 			
 def match( _str1, _str2, _threshold ):
 	return lev( _str1, _str2 ) <= _threshold
+	
+def slashes( _str ):
+	#Crop leading slash
+	if _str[0] == '/':
+		_str = _str[1:]
+	#Add trailing slash
+	if _str[ len(_str) - 1 ] != '/':
+		_str += '/'
+	return _str
+	
+def dirfmt( _str ):
+	_str = slashes( _str )
+	_str = os.path.expanduser('~') + '/' + _str
+	return _str
+	
+	
 		
 	
 	
