@@ -44,13 +44,20 @@ def lev( _str1, _str2 ):
 def match( _str1, _str2, _threshold ):
 	return lev( _str1, _str2 ) <= _threshold
 	
-def slashes( _str ):
+def slashes( _str, _left, _right ):
 	#Crop leading slash
-	if _str[0] == '/':
+	if _str[0] == '/' and not _left:
 		_str = _str[1:]
+	elif _str[0] != '/' and _left:
+		_str = '/' + _str
+		
 	#Add trailing slash
-	if _str[ len(_str) - 1 ] != '/':
+	l = len(_str) - 1
+	if _str[l] == '/' and not _right:
+		_str = _str[:l]
+	elif _str[l] != '/' and _right:
 		_str += '/'
+		
 	return _str
 	
 def dirfmt( _str ):
