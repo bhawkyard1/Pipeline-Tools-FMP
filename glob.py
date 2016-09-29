@@ -4,4 +4,5 @@ def loadConfig():
 	with open("config.txt") as conf:
 		for line in conf:
 			lspl = line.split(' ')
-			globs[lspl[0]] = lspl[1]
+			if len(lspl) > 1:
+				globs[lspl[0]] = lspl[1]

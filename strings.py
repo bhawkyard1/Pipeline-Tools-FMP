@@ -54,9 +54,11 @@ def slashes( _str ):
 	return _str
 	
 def dirfmt( _str ):
-	_str = slashes( _str )
-	_str = os.path.expanduser('~') + '/' + _str
-	return _str
+	ret = ""
+	for i in _str:
+		if i != '\n':
+			ret += i
+	return ret
 	
 	
 		

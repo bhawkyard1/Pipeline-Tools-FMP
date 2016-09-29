@@ -69,7 +69,7 @@ def createProject ( _args ):
 		os.mkdir( _args[0] + "/implementation" )
 		setConfigValue( ["config.txt", "PROJECT_ROOT", _args[0]] )
 		glob.PROJECT_ROOT = _args[0]
-		createTextFile( "config.txt" )
+		createTextFile( _args[0] + "/config.txt" )
 	else:
 		respose = raw_input( "This project already exists! Would you like to overwrite?" )
 		#TO DO string similarity checks
