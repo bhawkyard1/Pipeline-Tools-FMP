@@ -144,7 +144,7 @@ def createAsset():
 	dst = glob.globs["PROJECT_ROOT"] + "/production/" + _name
 	os.mkdir( dst )
 	f = open( dst + "/config.txt", 'a' )
-	f.write("FLINK\nBLINK\nDEPENDENCIES")
+	f.write("FLINK\nBLINK\nDEPENDENCIES\nDEPENDANTS")
 	f.close()
 	f = open( dst + "/desc.txt", 'a' )
 	f.write("Describe your asset here...")
@@ -166,7 +166,10 @@ def deleteAsset():
 	
 #cur_asset is dependant on _asset
 def addDependancy( _asset ):
+	#Make cur asset dependant on _asset
 	appendConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + glob.globs["CUR_ASSET"] + "/config.txt", "DEPENDENCIES", _asset )
+	#Add cur asset to _asset's dependants
+	appendConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/config.txt", "DEPENDANTS", glob.globs["CUR_ASSET"] )
 	print glob.globs["CUR_ASSET"] + " is now dependant on " + _asset
 	log( glob.globs["PROJECT_ROOT"] + "/production/" + glob.globs["CUR_ASSET"], "Now dependant on asset " + _asset )
 	log( glob.globs["PROJECT_ROOT"], glob.globs["CUR_ASSET"] + " has become dependant on " + _asset )

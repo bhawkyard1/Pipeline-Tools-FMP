@@ -29,11 +29,6 @@ def updateText(_item, _string):
 def genAssetText():
 	return "Active Asset : " + glob.globs["CUR_ASSET"] + "\nStage : " + glob.g_PRODUCTION_STAGES[util.getAssetStage( glob.globs["CUR_ASSET"] )] + "\n"
 
-#Set active asset, then update GUI elements
-def dispatchSetActiveAsset( _arg ):
-	util.setActiveAsset( _arg )
-	updateText(txt_curassdir, genAssetText())
-
 #Run a command on an asset, update GUI
 def dispatchActiveAsset( _cmd ):
 	_cmd()
@@ -50,14 +45,14 @@ def confirmationYes(_win, _cmd, _update):
 	if _update:
 		updateText(txt_curassdir, genAssetText())
 
-def confirmation( _cmd, _update ):
+def confirmation( _msg, _cmd, _update ):
 	root = tk.Tk()
-	root.minsize(width = 256, height = 128)
-	root.maxsize(width = 256, height = 128)
+	root.minsize(width = 384, height = 128)
+	root.maxsize(width = 384, height = 128)
 	root.grid()  
 	txt = tk.Text(root, height = 2, width = 256)
 	txt.pack()
-	txt.insert(tk.END, "Whoa! Are you sure?")
+	txt.insert(tk.END, _msg)
 	txt.configure(state = tk.DISABLED)
 	
 	frm_yesno = tk.Frame(root)
@@ -97,7 +92,7 @@ frm_manipproj.pack()
 btn_createproj = tk.Button(root, text = 'Create', command = lambda : util.createProject( glob.globs["PROJECT_ROOT"] ))
 btn_createproj.pack(in_ = frm_manipproj, side = tk.LEFT)
 
-btn_deleteproj = tk.Button(root, text = 'Delete', command = lambda : confirmation( util.deleteProject, False ) )
+btn_deleteproj = tk.Button(root, text = 'Delete', command = lambda : confirmation( "Whoa! Are you sure you want to delete " + glob.globs["PROJECT_ROOT"] + "?", util.deleteProject, False ) )
 btn_deleteproj.pack(in_ = frm_manipproj, side = tk.LEFT)
 
 btn_backupproj = tk.Button(root, text = 'Backup', command = util.backupProject )
@@ -118,7 +113,7 @@ txt_assdir = tk.Text(frm_selass, height = 1, width = 48)
 txt_assdir.pack(in_ = frm_selass, side = tk.LEFT)
 txt_assdir.insert(tk.END, glob.globs["CUR_ASSET"])
 
-btn_setactiveass = tk.Button(frm_selass, text = 'Set Active Asset', command = lambda : dispatchSetActiveAsset( txt_assdir.get("1.0", tk.END) ) )
+btn_setactiveass = tk.Button(frm_selass, text = 'Set Active Asset', command = lambda : sequence( util.setActiveAsset( txt_assdir.get("1.0", tk.END) ), updateText(txt_curassdir, genAssetText()) ) )
 btn_setactiveass.pack(in_ = frm_selass, side = tk.LEFT)
 
 frm_manipass = tk.Frame(root)
@@ -130,7 +125,7 @@ btn_createass.pack(in_ = frm_manipass, side = tk.LEFT)
 btn_promoass = tk.Button(root, text = 'Promote', command = lambda : dispatchActiveAsset( util.promoteAsset ))
 btn_promoass.pack(in_ = frm_manipass, side = tk.LEFT)
 
-btn_deleteass = tk.Button(root, text = 'Delete', command = lambda : confirmation( util.deleteAsset, True ))
+btn_deleteass = tk.Button(root, text = 'Delete', command = lambda : confirmation( "Whoa! Are you sure you want to delete " + glob.globs["CUR_ASSET"] + "?", util.deleteAsset, True ))
 btn_deleteass.pack(in_ = frm_manipass, side = tk.LEFT)
 
 btn_backupass = tk.Button(root, text = 'Backup', command = quit)
