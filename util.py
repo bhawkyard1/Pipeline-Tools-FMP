@@ -2,7 +2,6 @@ import os
 import shutil
 import zipfile
 import datetime
-import tempfile
 import getpass
 
 import glob
@@ -28,63 +27,66 @@ def createTextFile( _name ):
 #2 : value to set to
 def setConfigValue( _path, _key, _val ):
 	#Create temp file
-	f, fname = tempfile.mkstemp()
-	with open(fname,'w') as new_file:
-		with open( _path ) as old_file:
-			for line in old_file:
-				if strings.dirfmt(line.split( ' ' )[0]) == _key:
-					new_file.write( _key + ' ' + _val + '\n' )
-				else:
-					new_file.write( line )
+	temp = open("temp.txt", 'w')
+	with open( _path ) as old_file:
+		for line in old_file:
+			if strings.dirfmt(line.split( ' ' )[0]) == _key:
+				temp.write( _key + ' ' + _val + '\n' )
+			else:
+				temp.write( line )
 					
-	new_file.close()
-	os.close(f)
+	temp.close()
 	#Remove original file
 	os.remove( _path )
 	#Move new file
-	shutil.move(fname, os.path.abspath( _path ) )
+	shutil.move("temp.txt", os.path.abspath( _path ) )
 	
 #Reads a config file and appends to a set of values held by a key	
 def appendConfigValue( _path, _key, _toAppend ):
 	#Create temp file
-	f, fname = tempfile.mkstemp()
-	with open(fname,'w') as new_file:
-		with open( _path ) as old_file:
-			for line in old_file:
-				splitLine = line.split(' ')
-				if strings.dirfmt(splitLine[0]) == _key:
-					orig = ""
-					if len(splitLine) > 1:
-						orig = strings.dirfmt(splitLine[1]) + ","
-					new_file.write( _key + ' ' + orig + ',' + _toAppend + '\n' )
-					new_file.write( _key + ' ' + orig + ',' + _toAppend + '\n' )
-				else:
-					new_file.write( line )
+	temp = open("temp.txt", 'w')
+	with open( _path ) as old_file:
+		for line in old_file:
+			splitLine = line.split(' ')
+			if strings.dirfmt(splitLine[0]) == _key:
+				orig = ""
+				if len(splitLine) > 1:
+					orig = strings.dirfmt(splitLine[1]) + ","
+				temp.write( _key + ' ' + orig + ',' + _toAppend + '\n' )
+			else:
+				temp.write( line )
 					
-	new_file.close()
-	os.close(f)
+	temp.close()
 	#Remove original file
 	os.remove( _path )
 	#Move new file
-	shutil.move(fname, os.path.abspath( _path ) )
+	shutil.move("temp.txt", os.path.abspath( _path ) )
 
 #0 : file path
 #1 : config key to search for  
 def getConfigValue( _path, _key ):
-	val = None
+	val = ""
 	with open( _path, 'r') as read:
 		for line in read:
 			lspl = line.split(' ')
 			if lspl[0] == _key and len(lspl) > 1:
 				val = lspl[1]
-		if val == None:
-			return None
+		if val == "":
+			return ""
 					
 	read.close()
     
 	return val.splitlines()[0]
+	
+#Returns a list of assets which depend on _asset
+def getDependants( _asset ):
+	return strings.dirfmt( getConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/config.txt", "DEPENDANTS" ) ).split(',')
+	
+#Returns a list of containing _assets dependencies
+def getDependencies( _asset ):
+	return strings.dirfmt( getConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/config.txt", "DEPENDENCIES" ) ).split(',')
     
-#0 : project path
+#Sets the active project
 def setActiveProject( _path ):
 	_path = strings.dirfmt(_path)
 	print "Setting active project to " + _path
@@ -92,7 +94,7 @@ def setActiveProject( _path ):
 	setConfigValue( "config.txt", "PROJECT_ROOT", _path ) 
 	glob.globs["PROJECT_ROOT"] = _path
     
-#0 : path
+#Creates a project
 def createProject ( _path ):
 	#Format path
 	_path = strings.dirfmt(_path)
@@ -159,13 +161,23 @@ def deleteAssetStage( _asset, _stage ):
 	shutil.rmtree( glob.globs["PROJECT_ROOT"] + '/' + glob.g_PRODUCTION_STAGES[_stage] + '/' + _asset, ignore_errors = True )
 	
 def deleteAsset():
+	#Clean dependencies
+	print "Here are the dependencies : "
+	print getDependencies( glob.globs["CUR_ASSET"] )
+	print "Here are the dependants : "
+	print getDependants( glob.globs["CUR_ASSET"] )
+	
+	#Delete asset across all stages
 	stage = getAssetStage( glob.globs["CUR_ASSET"] ) + 1
 	for i in range( stage ):
 		deleteAssetStage( glob.globs["CUR_ASSET"], i )
+		
+	#Log event
 	log( glob.globs["PROJECT_ROOT"], "Asset " + glob.globs["CUR_ASSET"] + " deleted!" )
 	
 #cur_asset is dependant on _asset
 def addDependancy( _asset ):
+	_asset = strings.dirfmt(_asset)
 	#Make cur asset dependant on _asset
 	appendConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + glob.globs["CUR_ASSET"] + "/config.txt", "DEPENDENCIES", _asset )
 	#Add cur asset to _asset's dependants
@@ -180,9 +192,9 @@ def backupAsset ( _args ):
 #Forwards-link
 #Gets the most promoted version of an asset, as a path.
 #Depends on config.txt links being in order	
-def flink( _asset ):
-	_asset = strings.dirfmt( _asset )
-	return getConfigValue( _asset + "/config.txt", "FLINK" )
+def flink( _path ):
+	_path = strings.dirfmt( _path )
+	return getConfigValue( _path + "/config.txt", "FLINK" )
 	
 def getAssetStage( _asset ):
 	#Check asset exists
@@ -194,7 +206,7 @@ def getAssetStage( _asset ):
 	stage = 1
 	fl = flink( glob.globs["PROJECT_ROOT"] + "/production/" + _asset )
 	
-	while fl != None:
+	while fl != "":
 		fl = flink(fl)
 		stage += 1
 		
