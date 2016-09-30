@@ -1,3 +1,8 @@
+import sys
+sys.path.append("/public/devel/2015/gaffer/lib/python2.7/lib-tk")
+sys.path.append("/opt/realflow/lib/python/lib-dynload")
+sys.path.append("~/tk8.6.6/unix")
+
 import Tkinter as tk
 import util
 import glob
@@ -11,6 +16,32 @@ def sequence(*functions):
             return_value = function(*args, **kwargs)
         return return_value
     return func
+    
+#This checks whether the current asset has dependants. If it does, we warn the user, and may or may not execute the supplied command.
+def dependanciesCheck( _cmd ):
+	deps = getDependants( glob.globs["CUR_ASSET"] )
+	msg = "Uh oh! " + glob.globs["CUR_ASSET"] + " has the following dependants : "
+	for i in deps:
+		msg += i + " "
+	if len(deps) > 0:
+		root = tk.Tk()
+		root.minsize(width = 384, height = 128)
+		root.maxsize(width = 384, height = 128)
+		root.grid()  
+		txt = tk.Text(root, height = 2, width = 256)
+		txt.pack()
+		txt.insert(tk.END, msg)
+		txt.configure(state = tk.DISABLED)
+		
+		frm_yesno = tk.Frame(root)
+		frm_yesno.pack()
+		
+		btn_yes = tk.Button(root, text = 'Yes', command = lambda : confirmationYes( root, _cmd, _update ))
+		btn_yes.pack(in_ = frm_yesno, side = tk.LEFT)
+
+		btn_no = tk.Button(root, text = 'No', command = lambda : closeWindow( root ))
+		btn_no.pack(in_ = frm_yesno, side = tk.LEFT)	
+		
 
 #Set active project, then update GUI elements
 def dispatchActiveProject( _arg ):
@@ -76,6 +107,7 @@ txt_curdir.pack()
 txt_curdir.insert(tk.END, "Active Project : " + glob.globs["PROJECT_ROOT"])
 txt_curdir.configure(state = tk.DISABLED)
 
+#Set Project
 frm_selproj = tk.Frame(root)
 frm_selproj.pack()
 
@@ -86,6 +118,17 @@ txt_projdir.insert(tk.END, glob.globs["PROJECT_ROOT"])
 btn_setactiveproj = tk.Button(frm_selproj, text = 'Set Active Project', command = lambda : dispatchActiveProject( txt_projdir.get("1.0", tk.END) ) )
 btn_setactiveproj.pack(in_ = frm_selproj, side = tk.LEFT)
 
+#Add log comment
+frm_log = tk.Frame(root)
+frm_log.pack()
+
+txt_log = tk.Text(frm_log, height = 1, width = 48)
+txt_log.pack(in_ = frm_log, side = tk.LEFT)
+
+btn_log = tk.Button(frm_log, text = 'Add Log', command = lambda : util.log( glob.globs["PROJECT_ROOT"], "(COMMENT)" + txt_log.get("1.0", tk.END) ) )
+btn_log.pack(in_ = frm_log, side = tk.LEFT)
+
+#Manipulate active project
 frm_manipproj = tk.Frame(root)
 frm_manipproj.pack()
 
@@ -123,6 +166,9 @@ btn_createass = tk.Button(root, text = 'Create', command = lambda : dispatchActi
 btn_createass.pack(in_ = frm_manipass, side = tk.LEFT)
 
 btn_promoass = tk.Button(root, text = 'Promote', command = lambda : dispatchActiveAsset( util.promoteAsset ))
+btn_promoass.pack(in_ = frm_manipass, side = tk.LEFT)
+
+btn_promoass = tk.Button(root, text = 'Demote', command = lambda : dispatchActiveAsset( util.demoteAsset ))
 btn_promoass.pack(in_ = frm_manipass, side = tk.LEFT)
 
 btn_deleteass = tk.Button(root, text = 'Delete', command = lambda : confirmation( "Whoa! Are you sure you want to delete " + glob.globs["CUR_ASSET"] + "?", util.deleteAsset, True ))

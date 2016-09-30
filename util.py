@@ -80,11 +80,13 @@ def getConfigValue( _path, _key ):
 	
 #Returns a list of assets which depend on _asset
 def getDependants( _asset ):
-	return strings.dirfmt( getConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/config.txt", "DEPENDANTS" ) ).split(',')
+	read = strings.dirfmt( getConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/config.txt", "DEPENDANTS" ) ).split(',')
+	return strings.cleanStringArray( read )
 	
 #Returns a list of containing _assets dependencies
 def getDependencies( _asset ):
-	return strings.dirfmt( getConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/config.txt", "DEPENDENCIES" ) ).split(',')
+	read = strings.dirfmt( getConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/config.txt", "DEPENDENCIES" ) ).split(',')
+	return strings.cleanStringArray( read )
     
 #Sets the active project
 def setActiveProject( _path ):
@@ -234,6 +236,26 @@ def promoteAsset ():
 	
 	log( glob.globs["PROJECT_ROOT"] + "/production/" + _asset, "Asset promoted to " + glob.g_PRODUCTION_STAGES[stage + 1] )
 	log( glob.globs["PROJECT_ROOT"], "Asset " + _asset + " promoted to " + glob.g_PRODUCTION_STAGES[stage + 1] )
+	
+def demoteAsset():
+	asset = glob.globs["CUR_ASSET"]
+	stage = getAssetStage( asset )
+	if stage <= 1:
+		print "Failed : Asset is not past production stage!"
+		return
+		
+	print "Demoting " + asset + " to " + glob.g_PRODUCTION_STAGES[stage - 1]
+	
+	deleteAssetStage( asset, stage )
+	
+	#Asset to have flink altered
+	clip = glob.g_PRODUCTION_STAGES[stage - 1]
+	clip = glob.globs["PROJECT_ROOT"] + strings.slashes(clip, True, True) + asset
+	
+	setConfigValue( clip + "/config.txt", "FLINK", "")
+	
+	log( glob.globs["PROJECT_ROOT"] + "/production/" + asset, "Asset demoted to " + glob.g_PRODUCTION_STAGES[stage - 1] )
+	log( glob.globs["PROJECT_ROOT"], "Asset " + asset + " demoted to " + glob.g_PRODUCTION_STAGES[stage - 1] )		
 
 def folderExists ( _path ):
 	return os.path.exists( _path )

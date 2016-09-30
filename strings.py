@@ -67,8 +67,12 @@ def dirfmt( _str ):
 			ret += i
 	return ret
 	
-	
-		
+def cleanStringArray( _array ):
+	ret = []
+	for i in _array:
+		if i != "":
+			ret.append(i)
+	return ret
 	
 	
 	
