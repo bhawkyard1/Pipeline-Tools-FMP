@@ -1,1 +1,1 @@
-PROJECT_ROOT /home/i7620560/projects/project_the_first
+PROJECT_ROOT /home/i7620560/projects/pro1

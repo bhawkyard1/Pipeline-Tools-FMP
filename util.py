@@ -66,6 +66,9 @@ def appendConfigValue( _path, _key, _toAppend ):
 #1 : config key to search for  
 def getConfigValue( _path, _key ):
 	val = ""
+	if not fileExists( _path ):
+		return val
+		
 	with open( _path, 'r') as read:
 		for line in read:
 			lspl = line.split(' ')
@@ -87,6 +90,11 @@ def getDependants( _asset ):
 def getDependencies( _asset ):
 	read = strings.dirfmt( getConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/config.txt", "DEPENDENCIES" ) ).split(',')
 	return strings.cleanStringArray( read )
+	
+#Is _asset1 dependant on _asset2?
+def isDependant( _asset1, _asset2 ):
+	deps = getDependencies( _asset1 )
+	return _asset2 in deps
     
 #Sets the active project
 def setActiveProject( _path ):
@@ -180,6 +188,11 @@ def deleteAsset():
 #cur_asset is dependant on _asset
 def addDependancy( _asset ):
 	_asset = strings.dirfmt(_asset)
+	path = glob.globs["PROJECT_ROOT"] + "/production/"
+	
+	if _asset == glob.globs["CUR_ASSET"] or not folderExists(path + glob.globs["CUR_ASSET"]) or not folderExists(path + _asset):
+		return
+	
 	#Make cur asset dependant on _asset
 	appendConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + glob.globs["CUR_ASSET"] + "/config.txt", "DEPENDENCIES", _asset )
 	#Add cur asset to _asset's dependants

@@ -19,10 +19,11 @@ def sequence(*functions):
     
 #This checks whether the current asset has dependants. If it does, we warn the user, and may or may not execute the supplied command.
 def dependanciesCheck( _cmd ):
-	deps = getDependants( glob.globs["CUR_ASSET"] )
-	msg = "Uh oh! " + glob.globs["CUR_ASSET"] + " has the following dependants : "
+	deps = util.getDependants( glob.globs["CUR_ASSET"] )
+	msg = "Uh oh! " + glob.globs["CUR_ASSET"] + " has the following dependants :"
 	for i in deps:
-		msg += i + " "
+		msg += " " + i
+	msg += ". Continue?"
 	if len(deps) > 0:
 		root = tk.Tk()
 		root.minsize(width = 384, height = 128)
@@ -36,12 +37,13 @@ def dependanciesCheck( _cmd ):
 		frm_yesno = tk.Frame(root)
 		frm_yesno.pack()
 		
-		btn_yes = tk.Button(root, text = 'Yes', command = lambda : confirmationYes( root, _cmd, _update ))
+		btn_yes = tk.Button(root, text = 'Yes', command = lambda : confirmationYes( root, _cmd, True ))
 		btn_yes.pack(in_ = frm_yesno, side = tk.LEFT)
 
 		btn_no = tk.Button(root, text = 'No', command = lambda : closeWindow( root ))
 		btn_no.pack(in_ = frm_yesno, side = tk.LEFT)	
-		
+	else:
+		_cmd()				
 
 #Set active project, then update GUI elements
 def dispatchActiveProject( _arg ):
@@ -58,7 +60,7 @@ def updateText(_item, _string):
 	_item.configure(state = tk.DISABLED)
 
 def genAssetText():
-	return "Active Asset : " + glob.globs["CUR_ASSET"] + "\nStage : " + glob.g_PRODUCTION_STAGES[util.getAssetStage( glob.globs["CUR_ASSET"] )] + "\n"
+	return "Active Asset : " + glob.globs["CUR_ASSET"] + "\nStage : " + glob.g_PRODUCTION_STAGES[util.getAssetStage( glob.globs["CUR_ASSET"] )] + "\nDependencies : " + str(util.getDependencies( glob.globs["CUR_ASSET"] )).strip('[]') + "\nDependants : " + str(util.getDependants( glob.globs["CUR_ASSET"] )).strip('[]') + "\n"
 
 #Run a command on an asset, update GUI
 def dispatchActiveAsset( _cmd ):
@@ -68,15 +70,15 @@ def dispatchActiveAsset( _cmd ):
 def closeWindow( _win ):
 	_win.destroy()	
 
-def confirmationYes(_win, _cmd, _update):
-	_cmd()
+def confirmationYes(_win, _cmd, _update, *_args):
+	_cmd( *_args )
 	closeWindow( _win )
 	
 	#fuck me I feel ill looking at this
 	if _update:
 		updateText(txt_curassdir, genAssetText())
 
-def confirmation( _msg, _cmd, _update ):
+def confirmation( _msg, _cmd, _update, *_args ):
 	root = tk.Tk()
 	root.minsize(width = 384, height = 128)
 	root.maxsize(width = 384, height = 128)
@@ -89,7 +91,7 @@ def confirmation( _msg, _cmd, _update ):
 	frm_yesno = tk.Frame(root)
 	frm_yesno.pack()
 	
-	btn_yes = tk.Button(root, text = 'Yes', command = lambda : confirmationYes( root, _cmd, _update ))
+	btn_yes = tk.Button(root, text = 'Yes', command = lambda : confirmationYes( root, _cmd, _update, *_args ))
 	btn_yes.pack(in_ = frm_yesno, side = tk.LEFT)
 
 	btn_no = tk.Button(root, text = 'No', command = lambda : closeWindow( root ))
@@ -145,8 +147,7 @@ btn_backupproj.pack(in_ = frm_manipproj, side = tk.LEFT)
 #Assets
 txt_curassdir = tk.Text(root, height = 8, width = 512)
 txt_curassdir.pack()
-txt_curassdir.insert(tk.END, "Active Asset : " + glob.globs["CUR_ASSET"] + "\n")
-txt_curassdir.insert(tk.END, "Stage : " + glob.g_PRODUCTION_STAGES[util.getAssetStage( glob.globs["CUR_ASSET"] )] + "\n")
+txt_curassdir.insert(tk.END, genAssetText())
 txt_curassdir.configure(state = tk.DISABLED)
 
 frm_selass = tk.Frame(root)
@@ -171,7 +172,7 @@ btn_promoass.pack(in_ = frm_manipass, side = tk.LEFT)
 btn_promoass = tk.Button(root, text = 'Demote', command = lambda : dispatchActiveAsset( util.demoteAsset ))
 btn_promoass.pack(in_ = frm_manipass, side = tk.LEFT)
 
-btn_deleteass = tk.Button(root, text = 'Delete', command = lambda : confirmation( "Whoa! Are you sure you want to delete " + glob.globs["CUR_ASSET"] + "?", util.deleteAsset, True ))
+btn_deleteass = tk.Button(root, text = 'Delete', command = lambda : confirmation( "Whoa! Are you sure you want to delete " + glob.globs["CUR_ASSET"] + "?", dependanciesCheck, True, util.deleteAsset ))
 btn_deleteass.pack(in_ = frm_manipass, side = tk.LEFT)
 
 btn_backupass = tk.Button(root, text = 'Backup', command = quit)
@@ -179,7 +180,6 @@ btn_backupass.pack(in_ = frm_manipass, side = tk.LEFT)
 
 btn_adddepass = tk.Button(root, text = 'Add dependancy', command = lambda : sequence(util.addDependancy( txt_assdir.get("1.0", tk.END) ), updateText(txt_curassdir, genAssetText())))
 btn_adddepass.pack(in_ = frm_manipass, side = tk.LEFT)
-
 
 quitButton = tk.Button(root, text = 'Quit', command = quit)            
 quitButton.pack()
