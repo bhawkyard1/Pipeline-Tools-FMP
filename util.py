@@ -197,9 +197,30 @@ def addDependancy( _asset ):
 	appendConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + glob.globs["CUR_ASSET"] + "/config.txt", "DEPENDENCIES", _asset )
 	#Add cur asset to _asset's dependants
 	appendConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/config.txt", "DEPENDANTS", glob.globs["CUR_ASSET"] )
+	
 	print glob.globs["CUR_ASSET"] + " is now dependant on " + _asset
 	log( glob.globs["PROJECT_ROOT"] + "/production/" + glob.globs["CUR_ASSET"], "Now dependant on asset " + _asset )
 	log( glob.globs["PROJECT_ROOT"], glob.globs["CUR_ASSET"] + " has become dependant on " + _asset )
+	
+#cur_asset is no longer dependant on this asset
+def removeDependancy( _asset ):
+	_asset = strings.dirfmt(_asset)
+	path = glob.globs["PROJECT_ROOT"] + "/production/"
+	
+	if _asset == glob.globs["CUR_ASSET"] or not folderExists(path + glob.globs["CUR_ASSET"]) or not folderExists(path + _asset):
+		return
+	
+	olddeps = getDependencies( glob.globs["CUR_ASSET"] )
+	newdeps = ""
+	for dep in deps:
+		if dep != _asset:
+			newdeps += dep + ","
+		
+	print glob.globs["CUR_ASSET"] + " is no longer dependant on " + _asset
+	log( glob.globs["PROJECT_ROOT"] + "/production/" + glob.globs["CUR_ASSET"], "No longer dependant on asset " + _asset )
+	log( glob.globs["PROJECT_ROOT"], glob.globs["CUR_ASSET"] + " is no longer dependant on " + _asset )
+		
+	
 	
 def backupAsset ( _args ):
 	pass
