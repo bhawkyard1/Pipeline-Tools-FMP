@@ -212,15 +212,17 @@ def removeDependancy( _asset ):
 	
 	olddeps = getDependencies( glob.globs["CUR_ASSET"] )
 	newdeps = ""
-	for dep in deps:
+	print "DEPENDENCIES : "
+	for dep in olddeps:
+		print dep + ", " + _asset
 		if dep != _asset:
 			newdeps += dep + ","
+			
+	setConfigValue( path + glob.globs["CUR_ASSET"] + "/config.txt", "DEPENDENCIES", newdeps )
 		
 	print glob.globs["CUR_ASSET"] + " is no longer dependant on " + _asset
 	log( glob.globs["PROJECT_ROOT"] + "/production/" + glob.globs["CUR_ASSET"], "No longer dependant on asset " + _asset )
-	log( glob.globs["PROJECT_ROOT"], glob.globs["CUR_ASSET"] + " is no longer dependant on " + _asset )
-		
-	
+	log( glob.globs["PROJECT_ROOT"], glob.globs["CUR_ASSET"] + " is no longer dependant on " + _asset )	
 	
 def backupAsset ( _args ):
 	pass

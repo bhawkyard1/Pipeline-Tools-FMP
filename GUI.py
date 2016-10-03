@@ -184,7 +184,7 @@ btn_backupass.pack(in_ = frm_manipass, side = tk.LEFT)
 btn_adddepass = tk.Button(root, text = 'Add dependancy', command = lambda : sequence(util.addDependancy( txt_assdir.get("1.0", tk.END) ), updateText(txt_curassdir, genAssetText())))
 btn_adddepass.pack(in_ = frm_manipass, side = tk.LEFT)
 
-btn_rmdepass = tk.Button(root, text = 'Remove dependancy', command = lambda : sequence(util.addDependancy( txt_assdir.get("1.0", tk.END) ), updateText(txt_curassdir, genAssetText())))
+btn_rmdepass = tk.Button(root, text = 'Remove dependancy', command = lambda : sequence(util.removeDependancy( txt_assdir.get("1.0", tk.END) ), updateText(txt_curassdir, genAssetText())))
 btn_rmdepass.pack(in_ = frm_manipass, side = tk.LEFT)
 
 quitButton = tk.Button(root, text = 'Quit', command = quit)            
