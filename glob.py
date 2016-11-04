@@ -1,6 +1,10 @@
 import strings
 
-globs = {"PROJECT_ROOT" : "", "CUR_ASSET" : ""}
+globs = {
+	"PROJECT_ROOT" : "",
+	"CUR_ASSET" : "",
+	"ONLINE_ROOT" : ""
+		}
 
 g_PRODUCTION_STAGES = ["none", "production", "approval", "implementation"]
 
