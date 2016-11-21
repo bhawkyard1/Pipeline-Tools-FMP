@@ -61,11 +61,7 @@ def slashes( _str, _left, _right ):
 	return _str
 	
 def dirfmt( _str ):
-	ret = ""
-	for i in _str:
-		if i != '\n':
-			ret += i
-	return ret
+	return _str.replace('\n', '')
 	
 def cleanStringArray( _array ):
 	ret = []
@@ -74,5 +70,17 @@ def cleanStringArray( _array ):
 			ret.append(i)
 	return ret
 	
+def clipFileExtension( _name ):
+	spl = _name.split('.')
+	spl = spl[:-1]
+	ret = ""
+	for i in spl:
+		ret += i
+	return ret
+	
+def removeNumbersFromString( _str ):
+	for i in range(9):
+		_str = _str.replace( str(i), '' )
+	return _str
 	
 	

@@ -63,7 +63,11 @@ def updateText(_item, _string):
 	_item.configure(state = tk.DISABLED)
 
 def genAssetText():
-	return "Active Asset : " + glob.globs["CUR_ASSET"] + "\nStage : " + glob.g_PRODUCTION_STAGES[util.getAssetStage( glob.globs["CUR_ASSET"] )] + "\nDependencies : " + str(util.getDependencies( glob.globs["CUR_ASSET"] )).strip('[]') + "\nDependants : " + str(util.getDependants( glob.globs["CUR_ASSET"] )).strip('[]') + "\n"
+	return ("Active Asset : " + glob.globs["CUR_ASSET"] + 
+	"\nStage : " + glob.g_PRODUCTION_STAGES[util.getAssetStage( glob.globs["CUR_ASSET"] )] + 
+	"\nDependencies : " + str(util.getDependencies( glob.globs["CUR_ASSET"] )).strip('[]') + 
+	"\nDependants : " + str(util.getDependants( glob.globs["CUR_ASSET"] )).strip('[]') + 
+	"\nDescription : " + util.getDesc( glob.globs["CUR_ASSET"] ) + "\n")
 
 #Run a command on an asset, update GUI
 def dispatchActiveAsset( _cmd ):
@@ -106,13 +110,14 @@ root.minsize(width = 512, height = 512)
 root.maxsize(width = 512, height = 512)
 root.grid()  
 
-#Projects
+#############################
+###### CREATE PROJECT #######
+#############################
 txt_curdir = tk.Text(root, height = 2, width = 512)
 txt_curdir.pack()
 txt_curdir.insert(tk.END, "Active Project : " + glob.globs["PROJECT_ROOT"])
 txt_curdir.configure(state = tk.DISABLED)
 
-#Set Project
 frm_selproj = tk.Frame(root)
 frm_selproj.pack()
 
@@ -123,7 +128,9 @@ txt_projdir.insert(tk.END, glob.globs["PROJECT_ROOT"])
 btn_setactiveproj = tk.Button(frm_selproj, text = 'Set Active Project', command = lambda : dispatchActiveProject( txt_projdir.get("1.0", tk.END) ) )
 btn_setactiveproj.pack(in_ = frm_selproj, side = tk.LEFT)
 
-#Add log comment
+#############################
+########## LOGGING ##########
+#############################
 frm_log = tk.Frame(root)
 frm_log.pack()
 
@@ -133,7 +140,9 @@ txt_log.pack(in_ = frm_log, side = tk.LEFT)
 btn_log = tk.Button(frm_log, text = 'Add Log', command = lambda : util.log( glob.globs["PROJECT_ROOT"], "(COMMENT)" + txt_log.get("1.0", tk.END) ) )
 btn_log.pack(in_ = frm_log, side = tk.LEFT)
 
-#Manipulate active project
+#############################
+###### PROJECT MANIP ########
+#############################
 frm_manipproj = tk.Frame(root)
 frm_manipproj.pack()
 
@@ -147,7 +156,9 @@ btn_backupproj = tk.Button(root, text = 'Backup', command = util.backupProject )
 btn_backupproj.pack(in_ = frm_manipproj, side = tk.LEFT)
 
 
-#Assets
+#############################
+####### CREATE ASSET ########
+#############################
 txt_curassdir = tk.Text(root, height = 8, width = 512)
 txt_curassdir.pack()
 txt_curassdir.insert(tk.END, genAssetText())
@@ -163,6 +174,9 @@ txt_assdir.insert(tk.END, glob.globs["CUR_ASSET"])
 btn_setactiveass = tk.Button(frm_selass, text = 'Set Active Asset', command = lambda : sequence( util.setActiveAsset( txt_assdir.get("1.0", tk.END) ), updateText(txt_curassdir, genAssetText()) ) )
 btn_setactiveass.pack(in_ = frm_selass, side = tk.LEFT)
 
+#############################
+######## MANIP ASSET ########
+#############################
 frm_manipass = tk.Frame(root)
 frm_manipass.pack()
 
@@ -181,11 +195,25 @@ btn_deleteass.pack(in_ = frm_manipass, side = tk.LEFT)
 btn_backupass = tk.Button(root, text = 'Backup', command = quit)
 btn_backupass.pack(in_ = frm_manipass, side = tk.LEFT)
 
+#############################
+##### MANIP ASSET DEPS ######
+#############################
+frm_manipassdep = tk.Frame(root)
+frm_manipassdep.pack()
+
 btn_adddepass = tk.Button(root, text = 'Add dependancy', command = lambda : sequence(util.addDependancy( txt_assdir.get("1.0", tk.END) ), updateText(txt_curassdir, genAssetText())))
-btn_adddepass.pack(in_ = frm_manipass, side = tk.LEFT)
+btn_adddepass.pack(in_ = frm_manipassdep, side = tk.LEFT)
 
 btn_rmdepass = tk.Button(root, text = 'Remove dependancy', command = lambda : sequence(util.removeDependancy( txt_assdir.get("1.0", tk.END) ), updateText(txt_curassdir, genAssetText())))
-btn_rmdepass.pack(in_ = frm_manipass, side = tk.LEFT)
+btn_rmdepass.pack(in_ = frm_manipassdep, side = tk.LEFT)
+
+#############################
+######## OPEN ASSET #########
+#############################
+frm_openass = tk.Frame(root)
+frm_openass.pack()
+btn_adddepass = tk.Button( root, text = 'Open Asset', command = util.getCurFiles )
+btn_adddepass.pack(in_ = frm_openass, side = tk.LEFT)
 
 quitButton = tk.Button(root, text = 'Quit', command = quit)            
 quitButton.pack()

@@ -14,3 +14,9 @@ def loadConfig():
 			lspl = line.split(' ')
 			if len(lspl) > 1:
 				globs[lspl[0]] = strings.dirfmt(lspl[1])
+
+def curAsset():
+	return globs["PROJECT_ROOT"] + "/production/" + globs["CUR_ASSET"]
+	
+def curProject():
+	return globs["PROJECT_ROOT"]

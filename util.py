@@ -3,9 +3,13 @@ import shutil
 import zipfile
 import datetime
 import getpass
+import file
 
 import glob
 import strings
+
+curAsset = glob.curAsset
+curProject = glob.curProject
 
 def genTimeStamp():
 	day = datetime.date.today()
@@ -80,6 +84,16 @@ def getConfigValue( _path, _key ):
 	read.close()
     
 	return val.splitlines()[0]
+
+#Returns the asset description.
+def getDesc( _asset ):
+	desc = glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/desc.txt"
+	data = ""
+	if not fileExists( desc ):
+		return data
+	with open(desc, 'r') as f:
+		data = f.read().replace('\n', '')
+	return data
 	
 #Returns a list of assets which depend on _asset
 def getDependants( _asset ):
@@ -156,7 +170,7 @@ def createAsset():
 	dst = glob.globs["PROJECT_ROOT"] + "/production/" + _name
 	os.mkdir( dst )
 	f = open( dst + "/config.txt", 'a' )
-	f.write("FLINK\nBLINK\nDEPENDENCIES\nDEPENDANTS")
+	f.write("FLINK\nBLINK\nDEPENDENCIES\nDEPENDANTS\nCHECKEDOUT False\n")
 	f.close()
 	f = open( dst + "/desc.txt", 'a' )
 	f.write("Describe your asset here...")
@@ -238,11 +252,11 @@ def getAssetStage( _asset ):
 	#Check asset exists
 	stage = 0
 		
-	if len(_asset) == 0 or not folderExists( glob.globs["PROJECT_ROOT"] + "/production/" + _asset ):
+	if len(_asset) == 0 or not folderExists( curAsset() ):
 		return stage
 	
 	stage = 1
-	fl = flink( glob.globs["PROJECT_ROOT"] + "/production/" + _asset )
+	fl = flink( curAsset() )
 	
 	while fl != "":
 		fl = flink(fl)
@@ -252,26 +266,26 @@ def getAssetStage( _asset ):
 	
 #0 : Asset name
 def promoteAsset ():
-	_asset = glob.globs["CUR_ASSET"]
-	stage = getAssetStage( _asset )
+	asset = glob.globs["CUR_ASSET"]
+	stage = getAssetStage( asset )
 	if stage == 3:
 		print "Failed : Asset already prepared for implementation!"
 		return	
 	
-	print "Promoting " + _asset + " to " + glob.g_PRODUCTION_STAGES[stage + 1]
+	print "Promoting " + asset + " to " + glob.g_PRODUCTION_STAGES[stage + 1]
 		
 	src = glob.g_PRODUCTION_STAGES[stage]
-	src = glob.globs["PROJECT_ROOT"] + strings.slashes(src, True, True) + _asset
+	src = glob.globs["PROJECT_ROOT"] + strings.slashes(src, True, True) + asset
 	dst = glob.g_PRODUCTION_STAGES[stage + 1]
-	dst = glob.globs["PROJECT_ROOT"] + strings.slashes(dst, True, True) + _asset
+	dst = glob.globs["PROJECT_ROOT"] + strings.slashes(dst, True, True) + asset
 	
 	shutil.copytree( src, dst )	
 	
 	setConfigValue( src + "/config.txt", "FLINK", dst)
 	setConfigValue( dst + "/config.txt", "BLINK", src)
 	
-	log( glob.globs["PROJECT_ROOT"] + "/production/" + _asset, "Asset promoted to " + glob.g_PRODUCTION_STAGES[stage + 1] )
-	log( glob.globs["PROJECT_ROOT"], "Asset " + _asset + " promoted to " + glob.g_PRODUCTION_STAGES[stage + 1] )
+	log( curAsset(), "Asset promoted to " + glob.g_PRODUCTION_STAGES[stage + 1] )
+	log( curProject(), "Asset " + asset + " promoted to " + glob.g_PRODUCTION_STAGES[stage + 1] )
 	
 def demoteAsset():
 	asset = glob.globs["CUR_ASSET"]
@@ -286,15 +300,47 @@ def demoteAsset():
 	
 	#Asset to have flink altered
 	clip = glob.g_PRODUCTION_STAGES[stage - 1]
-	clip = glob.globs["PROJECT_ROOT"] + strings.slashes(clip, True, True) + asset
+	clip = curProject() + strings.slashes(clip, True, True) + asset
 	
 	setConfigValue( clip + "/config.txt", "FLINK", "")
 	
-	log( glob.globs["PROJECT_ROOT"] + "/production/" + asset, "Asset demoted to " + glob.g_PRODUCTION_STAGES[stage - 1] )
-	log( glob.globs["PROJECT_ROOT"], "Asset " + asset + " demoted to " + glob.g_PRODUCTION_STAGES[stage - 1] )		
+	log( curAsset(), "Asset demoted to " + glob.g_PRODUCTION_STAGES[stage - 1] )
+	log( curProject(), "Asset " + asset + " demoted to " + glob.g_PRODUCTION_STAGES[stage - 1] )		
 
 def folderExists ( _path ):
 	return os.path.exists( _path )
 
 def fileExists( _path ):
 	return os.path.isfile( _path )
+	
+def getCurFiles( ):
+	filenames = []
+	dupes = []
+	for root, dir, files in os.walk( curAsset() ):
+		for f in files:
+			j = os.path.join( root, f )
+			filenames.append( j )
+	print filenames
+	for Ai, A in enumerate(filenames):
+		for Bi, B in enumerate(filenames):
+			#Ignore duplicates.
+			if A == B:
+				continue
+			cA = strings.clipFileExtension( A )
+			cAname = strings.removeNumbersFromString( cA )
+			Aext = A.split('.')[-1]
+			cB = strings.clipFileExtension( B )
+			cBname = strings.removeNumbersFromString( cB )
+			Bext = B.split('.')[-1]
+			print "ca is " + cA + " cb is " + cB
+			#If the names match this closely, they are probably duplicate files.
+			if strings.lev( cAname, cBname ) < 1 and Aext == Bext:
+				if cA > cB and B not in dupes:
+					dupes.append( B )
+				elif cB > cA and A not in dupes:
+					dupes.append( A )
+	for i in dupes:
+		filenames.remove( i )
+	for i in filenames:
+		print "Opening " + i
+		file.openFile( i )
