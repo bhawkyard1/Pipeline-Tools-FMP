@@ -8,6 +8,8 @@ import file
 import glob
 import strings
 
+if
+
 curAsset = glob.curAsset
 curProject = glob.curProject
 
