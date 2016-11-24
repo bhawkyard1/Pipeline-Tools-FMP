@@ -5,10 +5,19 @@ if platform.system() == "Linux":
 	sys.path.append("/public/devel/2015/gaffer/lib/python2.7/lib-tk")
 	sys.path.append("/opt/realflow/lib/python/lib-dynload")
 	sys.path.append("~/tk8.6.6/unix")
+	
+if platform.system() == "Linux":
+	import syncunix as sync
+elif platform.system() == "Windows":
+	import syncwindows as sync
 
+reload(sync)
+	
 import Tkinter as tk
 import util
 import glob
+
+curAssetProductionPath = glob.curAssetProductionPath
 
 glob.loadConfig()
 
@@ -19,7 +28,7 @@ def sequence(*functions):
             return_value = function(*args, **kwargs)
         return return_value
     return func
-    
+
 #This checks whether the current asset has dependants. If it does, we warn the user, and may or may not execute the supplied command.
 def dependanciesCheck( _cmd ):
 	deps = util.getDependants( glob.globs["CUR_ASSET"] )
@@ -57,6 +66,10 @@ def dispatchActiveProject( _arg ):
 	txt_curdir.configure(state = tk.DISABLED)
 
 def updateText(_item, _string):
+	col = "salmon"
+	if util.getConfigValue( curAssetProductionPath(), "CHECKEDOUT" ) == "True":
+		col = "green"
+	_item.configure( bg = col )
 	_item.configure(state = tk.NORMAL)
 	_item.delete( "1.0", tk.END )
 	_item.insert(tk.END, _string)
@@ -64,6 +77,7 @@ def updateText(_item, _string):
 
 def genAssetText():
 	return ("Active Asset : " + glob.globs["CUR_ASSET"] + 
+	"\nChecked Out : " + util.getConfigValue( glob.curAssetProductionPath(), "CHECKEDOUT" ) +
 	"\nStage : " + glob.g_PRODUCTION_STAGES[util.getAssetStage( glob.globs["CUR_ASSET"] )] + 
 	"\nDependencies : " + str(util.getDependencies( glob.globs["CUR_ASSET"] )).strip('[]') + 
 	"\nDependants : " + str(util.getDependants( glob.globs["CUR_ASSET"] )).strip('[]') + 
@@ -155,6 +169,14 @@ btn_deleteproj.pack(in_ = frm_manipproj, side = tk.LEFT)
 btn_backupproj = tk.Button(root, text = 'Backup', command = util.backupProject )
 btn_backupproj.pack(in_ = frm_manipproj, side = tk.LEFT)
 
+frm_syncproj = tk.Frame(root)
+frm_syncproj.pack()
+
+btn_pullproj = tk.Button(root, text = 'Pull Project', command = lambda : sync.pull())
+btn_pullproj.pack(in_ = frm_syncproj, side = tk.LEFT)
+
+btn_pushproj = tk.Button(root, text = 'Push Project', command = lambda : sync.push())
+btn_pushproj.pack(in_ = frm_syncproj, side = tk.LEFT)
 
 #############################
 ####### CREATE ASSET ########
@@ -162,6 +184,7 @@ btn_backupproj.pack(in_ = frm_manipproj, side = tk.LEFT)
 txt_curassdir = tk.Text(root, height = 8, width = 512)
 txt_curassdir.pack()
 txt_curassdir.insert(tk.END, genAssetText())
+txt_curassdir.configure( bg = "salmon" )
 txt_curassdir.configure(state = tk.DISABLED)
 
 frm_selass = tk.Frame(root)
@@ -182,6 +205,9 @@ frm_manipass.pack()
 
 btn_createass = tk.Button(root, text = 'Create', command = lambda : dispatchActiveAsset( util.createAsset ))
 btn_createass.pack(in_ = frm_manipass, side = tk.LEFT)
+
+btn_checkoutass = tk.Button(root, text = 'Checkout', command = lambda : dispatchActiveAsset( util.checkoutAsset ))
+btn_checkoutass.pack(in_ = frm_manipass, side = tk.LEFT)
 
 btn_promoass = tk.Button(root, text = 'Promote', command = lambda : dispatchActiveAsset( util.promoteAsset ))
 btn_promoass.pack(in_ = frm_manipass, side = tk.LEFT)
@@ -217,7 +243,6 @@ btn_adddepass.pack(in_ = frm_openass, side = tk.LEFT)
 
 quitButton = tk.Button(root, text = 'Quit', command = quit)            
 quitButton.pack()
-
 
 root.mainloop()                    
 

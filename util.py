@@ -8,9 +8,9 @@ import file
 import glob
 import strings
 
-if
-
-curAsset = glob.curAsset
+curAssetName = glob.curAssetName
+curAssetProductionPath = glob.curAssetProductionPath
+assetProductionPath = glob.assetProductionPath
 curProject = glob.curProject
 
 def genTimeStamp():
@@ -21,7 +21,8 @@ def genTimeStamp():
 	
 def log( _path, _msg ):
 	f = open( _path + "/log.txt", 'a' )
-	f.write(getpass.getuser() + " @ " + genTimeStamp() + " : " + _msg + '\n')
+	w = getpass.getuser() + " @ " + genTimeStamp() + " : " + _msg
+	f.write( w + '\n')
 	f.close()
 
 def createTextFile( _name ):
@@ -72,7 +73,9 @@ def appendConfigValue( _path, _key, _toAppend ):
 #1 : config key to search for  
 def getConfigValue( _path, _key ):
 	val = ""
+	_path += "/config.txt"
 	if not fileExists( _path ):
+		print "Error : getConfigValue failed, asset " + _path + " does not exist"
 		return val
 		
 	with open( _path, 'r') as read:
@@ -99,12 +102,12 @@ def getDesc( _asset ):
 	
 #Returns a list of assets which depend on _asset
 def getDependants( _asset ):
-	read = strings.dirfmt( getConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/config.txt", "DEPENDANTS" ) ).split(',')
+	read = strings.dirfmt( getConfigValue( assetProductionPath( _asset ), "DEPENDANTS" ) ).split(',')
 	return strings.cleanStringArray( read )
 	
 #Returns a list of containing _assets dependencies
 def getDependencies( _asset ):
-	read = strings.dirfmt( getConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/config.txt", "DEPENDENCIES" ) ).split(',')
+	read = strings.dirfmt( getConfigValue( assetProductionPath( _asset ), "DEPENDENCIES" ) ).split(',')
 	return strings.cleanStringArray( read )
 	
 #Is _asset1 dependant on _asset2?
@@ -157,17 +160,22 @@ def backupProject():
 	shutil.make_archive( path + stamp, 'zip', path )
 	shutil.rmtree( path + stamp )
 	
+def setCurAsset( _asset ):
+	glob.globs["CUR_ASSET"] = _asset
+	if getConfigValue( curAssetProductionPath(), "CHECKEDOUT" ) == "True":
+		curAssetCheckedOut = True
+
 #0 : project path
 def setActiveAsset( _asset ):
 	_asset = strings.dirfmt( _asset )
 	print "Setting active asset to " + _asset
 
 	setConfigValue( "config.txt", "CUR_ASSET", _asset ) 
-	glob.globs["CUR_ASSET"] = _asset
+	setCurAsset( _asset )
 
 #0 : asset name
 def createAsset():
-	_name = strings.dirfmt( glob.globs["CUR_ASSET"] )
+	_name = strings.dirfmt( curAssetName() )
 	print "Creating asset " + _name
 	dst = glob.globs["PROJECT_ROOT"] + "/production/" + _name
 	os.mkdir( dst )
@@ -189,76 +197,95 @@ def deleteAssetStage( _asset, _stage ):
 def deleteAsset():
 	#Clean dependencies
 	print "Here are the dependencies : "
-	print getDependencies( glob.globs["CUR_ASSET"] )
+	print getDependencies( curAssetName() )
 	print "Here are the dependants : "
-	print getDependants( glob.globs["CUR_ASSET"] )
+	print getDependants( curAssetName() )
 	
 	#Delete asset across all stages
-	stage = getAssetStage( glob.globs["CUR_ASSET"] ) + 1
+	stage = getAssetStage( curAssetName() ) + 1
 	for i in range( stage ):
-		deleteAssetStage( glob.globs["CUR_ASSET"], i )
+		deleteAssetStage( curAssetName(), i )
 		
 	#Log event
-	log( glob.globs["PROJECT_ROOT"], "Asset " + glob.globs["CUR_ASSET"] + " deleted!" )
+	log( glob.globs["PROJECT_ROOT"], "Asset " + curAssetName() + " deleted!" )
 	
 #cur_asset is dependant on _asset
 def addDependancy( _asset ):
 	_asset = strings.dirfmt(_asset)
 	path = glob.globs["PROJECT_ROOT"] + "/production/"
 	
-	if _asset == glob.globs["CUR_ASSET"] or not folderExists(path + glob.globs["CUR_ASSET"]) or not folderExists(path + _asset):
+	#Don't make an asset dependant on itself. That would be silly.
+	if _asset == curAssetName():
+		print "Failed : An asset cannot be dependant on itself."
+		return
+		
+	if not folderExists(path + curAssetName()) or not folderExists(path + _asset):
+		print "Failed : One or more of the assets named does not exist."
 		return
 	
 	#Make cur asset dependant on _asset
-	appendConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + glob.globs["CUR_ASSET"] + "/config.txt", "DEPENDENCIES", _asset )
+	appendConfigValue( curAssetProductionPath() + "/config.txt", "DEPENDENCIES", _asset )
 	#Add cur asset to _asset's dependants
-	appendConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/config.txt", "DEPENDANTS", glob.globs["CUR_ASSET"] )
+	appendConfigValue( glob.globs["PROJECT_ROOT"] + "/production/" + _asset + "/config.txt", "DEPENDANTS", curAssetName() )
 	
-	print glob.globs["CUR_ASSET"] + " is now dependant on " + _asset
-	log( glob.globs["PROJECT_ROOT"] + "/production/" + glob.globs["CUR_ASSET"], "Now dependant on asset " + _asset )
-	log( glob.globs["PROJECT_ROOT"], glob.globs["CUR_ASSET"] + " has become dependant on " + _asset )
+	print curAssetName() + " is now dependant on " + _asset
+	log( curAssetProductionPath(), "Now dependant on asset " + _asset )
+	log( glob.globs["PROJECT_ROOT"], curAssetName() + " has become dependant on " + _asset )
 	
 #cur_asset is no longer dependant on this asset
 def removeDependancy( _asset ):
 	_asset = strings.dirfmt(_asset)
 	path = glob.globs["PROJECT_ROOT"] + "/production/"
 	
-	if _asset == glob.globs["CUR_ASSET"] or not folderExists(path + glob.globs["CUR_ASSET"]) or not folderExists(path + _asset):
+	#Don't make an asset dependant on itself. That would be silly.
+	if _asset == curAssetName():
+		print "Failed : An asset cannot be dependant on itself."
+		return
+		
+	if not folderExists(path + curAssetName()) or not folderExists(path + _asset):
+		print "Failed : One or more of the assets named does not exist."
 		return
 	
-	olddeps = getDependencies( glob.globs["CUR_ASSET"] )
-	newdeps = ""
-	print "DEPENDENCIES : "
-	for dep in olddeps:
-		print dep + ", " + _asset
-		if dep != _asset:
-			newdeps += dep + ","
-			
-	setConfigValue( path + glob.globs["CUR_ASSET"] + "/config.txt", "DEPENDENCIES", newdeps )
+	#Remove dependancy
+	deps = getDependencies( curAssetName() )
+	deps.remove( _asset )		
+	setConfigValue( path + curAssetName() + "/config.txt", "DEPENDENCIES", strings.removeChars( str(deps), '[] ' ) )
 		
-	print glob.globs["CUR_ASSET"] + " is no longer dependant on " + _asset
-	log( glob.globs["PROJECT_ROOT"] + "/production/" + glob.globs["CUR_ASSET"], "No longer dependant on asset " + _asset )
-	log( glob.globs["PROJECT_ROOT"], glob.globs["CUR_ASSET"] + " is no longer dependant on " + _asset )	
+	#Remove dependants
+	deps = getDependants( _asset )
+	deps.remove( curAssetName() )
+	setConfigValue( path + _asset + "/config.txt", "DEPENDANTS", strings.removeChars( str(deps), '[] ' ) )
+		
+	print curAssetName() + " is no longer dependant on " + _asset
+	log( curAssetProductionPath(), "No longer dependant on asset " + _asset )
+	log( glob.globs["PROJECT_ROOT"], curAssetName() + " is no longer dependant on " + _asset )	
 	
 def backupAsset ( _args ):
 	pass
+	
+def checkoutAsset( ):
+	setConfigValue( curAssetProductionPath() + "/config.txt", "CHECKEDOUT", "True" )
+	
+	print "Checking out " + curAssetName()
+	log( curAssetProductionPath(), "This asset was checked out." )
+	log( glob.globs["PROJECT_ROOT"], curAssetName() + " was checked out." )
 
 #Forwards-link
 #Gets the most promoted version of an asset, as a path.
 #Depends on config.txt links being in order	
 def flink( _path ):
 	_path = strings.dirfmt( _path )
-	return getConfigValue( _path + "/config.txt", "FLINK" )
+	return getConfigValue( _path, "FLINK" )
 	
 def getAssetStage( _asset ):
 	#Check asset exists
 	stage = 0
 		
-	if len(_asset) == 0 or not folderExists( curAsset() ):
+	if len(_asset) == 0 or not folderExists( curAssetProductionPath() ):
 		return stage
 	
 	stage = 1
-	fl = flink( curAsset() )
+	fl = flink( curAssetProductionPath() )
 	
 	while fl != "":
 		fl = flink(fl)
@@ -268,7 +295,7 @@ def getAssetStage( _asset ):
 	
 #0 : Asset name
 def promoteAsset ():
-	asset = glob.globs["CUR_ASSET"]
+	asset = curAssetName()
 	stage = getAssetStage( asset )
 	if stage == 3:
 		print "Failed : Asset already prepared for implementation!"
@@ -286,11 +313,11 @@ def promoteAsset ():
 	setConfigValue( src + "/config.txt", "FLINK", dst)
 	setConfigValue( dst + "/config.txt", "BLINK", src)
 	
-	log( curAsset(), "Asset promoted to " + glob.g_PRODUCTION_STAGES[stage + 1] )
+	log( curAssetProductionPath(), "Asset promoted to " + glob.g_PRODUCTION_STAGES[stage + 1] )
 	log( curProject(), "Asset " + asset + " promoted to " + glob.g_PRODUCTION_STAGES[stage + 1] )
 	
 def demoteAsset():
-	asset = glob.globs["CUR_ASSET"]
+	asset = curAssetName()
 	stage = getAssetStage( asset )
 	if stage <= 1:
 		print "Failed : Asset is not past production stage!"
@@ -306,7 +333,7 @@ def demoteAsset():
 	
 	setConfigValue( clip + "/config.txt", "FLINK", "")
 	
-	log( curAsset(), "Asset demoted to " + glob.g_PRODUCTION_STAGES[stage - 1] )
+	log( curAssetProductionPath(), "Asset demoted to " + glob.g_PRODUCTION_STAGES[stage - 1] )
 	log( curProject(), "Asset " + asset + " demoted to " + glob.g_PRODUCTION_STAGES[stage - 1] )		
 
 def folderExists ( _path ):
@@ -318,7 +345,7 @@ def fileExists( _path ):
 def getCurFiles( ):
 	filenames = []
 	dupes = []
-	for root, dir, files in os.walk( curAsset() ):
+	for root, dir, files in os.walk( curAssetProductionPath() ):
 		for f in files:
 			j = os.path.join( root, f )
 			filenames.append( j )

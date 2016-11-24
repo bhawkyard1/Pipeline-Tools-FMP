@@ -83,4 +83,8 @@ def removeNumbersFromString( _str ):
 		_str = _str.replace( str(i), '' )
 	return _str
 	
+def removeChars( _str, _chars ):
+	for char in _chars:
+		_str = _str.replace( char, '' )
+	return _str
 	
