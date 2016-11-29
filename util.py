@@ -34,6 +34,11 @@ def createTextFile( _name ):
 #2 : value to set to
 def setConfigValue( _path, _key, _val ):
 	#Create temp file
+	if _path == "":
+		_path = "config.txt"
+	else:
+		_path += "/config.txt"
+		
 	temp = open("temp.txt", 'w')
 	with open( _path ) as old_file:
 		for line in old_file:
@@ -73,7 +78,11 @@ def appendConfigValue( _path, _key, _toAppend ):
 #1 : config key to search for  
 def getConfigValue( _path, _key ):
 	val = ""
-	_path += "/config.txt"
+	if _path == "":
+		_path = "config.txt"
+	else:
+		_path += "/config.txt"
+		
 	if not fileExists( _path ):
 		print "Error : getConfigValue failed, asset " + _path + " does not exist"
 		return val
@@ -120,7 +129,7 @@ def setActiveProject( _path ):
 	_path = strings.dirfmt(_path)
 	print "Setting active project to " + _path
 
-	setConfigValue( "config.txt", "PROJECT_ROOT", _path ) 
+	setConfigValue( "", "PROJECT_ROOT", _path ) 
 	glob.globs["PROJECT_ROOT"] = _path
     
 #Creates a project
@@ -135,7 +144,7 @@ def createProject ( _path ):
 		os.mkdir( _path + "/production" )
 		os.mkdir( _path + "/approval" )
 		os.mkdir( _path + "/implementation" )
-		setConfigValue( "config.txt", "PROJECT_ROOT", _path )
+		setConfigValue( "", "PROJECT_ROOT", _path )
 		glob.PROJECT_ROOT = _path
 		createTextFile( _path + "/config.txt" )
 		createTextFile( _path + "/log.txt" )
@@ -170,7 +179,7 @@ def setActiveAsset( _asset ):
 	_asset = strings.dirfmt( _asset )
 	print "Setting active asset to " + _asset
 
-	setConfigValue( "config.txt", "CUR_ASSET", _asset ) 
+	setConfigValue( "", "CUR_ASSET", _asset ) 
 	setCurAsset( _asset )
 
 #0 : asset name
@@ -249,12 +258,12 @@ def removeDependancy( _asset ):
 	#Remove dependancy
 	deps = getDependencies( curAssetName() )
 	deps.remove( _asset )		
-	setConfigValue( path + curAssetName() + "/config.txt", "DEPENDENCIES", strings.removeChars( str(deps), '[] ' ) )
+	setConfigValue( path + curAssetName(), "DEPENDENCIES", strings.removeChars( str(deps), '[] ' ) )
 		
 	#Remove dependants
 	deps = getDependants( _asset )
 	deps.remove( curAssetName() )
-	setConfigValue( path + _asset + "/config.txt", "DEPENDANTS", strings.removeChars( str(deps), '[] ' ) )
+	setConfigValue( path + _asset, "DEPENDANTS", strings.removeChars( str(deps), '[] ' ) )
 		
 	print curAssetName() + " is no longer dependant on " + _asset
 	log( curAssetProductionPath(), "No longer dependant on asset " + _asset )
@@ -264,7 +273,7 @@ def backupAsset ( _args ):
 	pass
 	
 def checkoutAsset( ):
-	setConfigValue( curAssetProductionPath() + "/config.txt", "CHECKEDOUT", "True" )
+	setConfigValue( curAssetProductionPath(), "CHECKEDOUT", "True" )
 	
 	print "Checking out " + curAssetName()
 	log( curAssetProductionPath(), "This asset was checked out." )
@@ -310,8 +319,8 @@ def promoteAsset ():
 	
 	shutil.copytree( src, dst )	
 	
-	setConfigValue( src + "/config.txt", "FLINK", dst)
-	setConfigValue( dst + "/config.txt", "BLINK", src)
+	setConfigValue( src, "FLINK", dst)
+	setConfigValue( dst, "BLINK", src)
 	
 	log( curAssetProductionPath(), "Asset promoted to " + glob.g_PRODUCTION_STAGES[stage + 1] )
 	log( curProject(), "Asset " + asset + " promoted to " + glob.g_PRODUCTION_STAGES[stage + 1] )
@@ -331,10 +340,19 @@ def demoteAsset():
 	clip = glob.g_PRODUCTION_STAGES[stage - 1]
 	clip = curProject() + strings.slashes(clip, True, True) + asset
 	
-	setConfigValue( clip + "/config.txt", "FLINK", "")
+	setConfigValue( clip, "FLINK", "")
 	
 	log( curAssetProductionPath(), "Asset demoted to " + glob.g_PRODUCTION_STAGES[stage - 1] )
 	log( curProject(), "Asset " + asset + " demoted to " + glob.g_PRODUCTION_STAGES[stage - 1] )		
+
+def copyAsset( _oldRoot, _asset, _newRoot ):
+	print "Copying asset from " + _oldRoot + " to " + _newRoot
+	if folderExists( _oldRoot + "/production/" + _asset ):
+		shutil.copytree( _oldRoot + "/production/" + _asset, _newRoot + "/production/" + _asset )
+	if folderExists( _oldRoot + "/approval/" + _asset ):
+		shutil.copytree( _oldRoot + "/approval/" + _asset, _newRoot + "/approval/" + _asset )
+	if folderExists( _oldRoot + "/implementation/" + _asset ):
+		shutil.copytree( _oldRoot + "/implementation/" + _asset, _newRoot + "/implementation/" + _asset )
 
 def folderExists ( _path ):
 	return os.path.exists( _path )

@@ -87,4 +87,4 @@ def removeChars( _str, _chars ):
 	for char in _chars:
 		_str = _str.replace( char, '' )
 	return _str
-	
+ 
