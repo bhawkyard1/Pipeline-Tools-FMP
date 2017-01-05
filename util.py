@@ -7,6 +7,7 @@ import file
 
 import glob
 import strings
+reload(strings)
 
 curAssetName = glob.curAssetName
 curAssetProductionPath = glob.curAssetProductionPath
@@ -127,7 +128,7 @@ def isDependant( _asset1, _asset2 ):
 #Sets the active project
 def setActiveProject( _path ):
 	_path = strings.dirfmt(_path)
-	print "Setting active project to " + _path
+	print "Setting active project to " + repr(_path)
 
 	setConfigValue( "", "PROJECT_ROOT", _path ) 
 	glob.globs["PROJECT_ROOT"] = _path
@@ -155,7 +156,12 @@ def createProject ( _path ):
 	
 #Deletes active project
 def deleteProject ():
+	print "Deleting " + glob.globs["PROJECT_ROOT"]
 	shutil.rmtree( glob.globs["PROJECT_ROOT"], ignore_errors = True )
+	print "fexists " + str(folderExists( glob.globs["PROJECT_ROOT"] ))
+	while folderExists( glob.globs["PROJECT_ROOT"] ):
+		print "passing"
+		pass
 
 #Backs up active project
 def backupProject():
@@ -178,7 +184,6 @@ def setCurAsset( _asset ):
 def setActiveAsset( _asset ):
 	_asset = strings.dirfmt( _asset )
 	print "Setting active asset to " + _asset
-
 	setConfigValue( "", "CUR_ASSET", _asset ) 
 	setCurAsset( _asset )
 
@@ -217,6 +222,9 @@ def deleteAsset():
 		
 	#Log event
 	log( glob.globs["PROJECT_ROOT"], "Asset " + curAssetName() + " deleted!" )
+	
+	while folderExists( curAssetProductionPath() ):
+		pass
 	
 #cur_asset is dependant on _asset
 def addDependancy( _asset ):

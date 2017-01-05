@@ -59,9 +59,11 @@ def slashes( _str, _left, _right ):
 		_str += '/'
 		
 	return _str
-	
+
 def dirfmt( _str ):
-	return _str.replace('\n', '')
+	_str = _str.rstrip()
+	_str = _str.replace('\\', '/')
+	return _str
 	
 def cleanStringArray( _array ):
 	ret = []
