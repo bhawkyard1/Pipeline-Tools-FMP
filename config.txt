@@ -1,4 +1,4 @@
-PROJECT_ROOT /home/i7620560/projects/t1
+PROJECT_ROOT Local path
 
 
 
@@ -32,3 +32,5 @@ PROJECT_ROOT /home/i7620560/projects/t1
 
 
 
+
+ONLINE_ROOT
