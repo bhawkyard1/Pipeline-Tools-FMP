@@ -25,17 +25,7 @@ class driveobj:
 		return gd.get(name)
 		
 	def calcID( self ):
-		spl = self.m_name.split('/')
-		id = 'root'
-		context = gd.getChildren( id )
-		#Nested things yeah
-		for i in spl:
-			for line in context:
-				if i in line:
-					id = line.split(' ')[0]
-					break
-			context = gd.getChildren( id )
-		self.m_id = id
+		self.m_id = gd.resolvePath(self.m_name)
 		print "id set to " + self.m_id
 		
 	def getChildren( self ):

@@ -6,9 +6,12 @@ if platform.system() == "Linux":
 	sys.path.append("/opt/realflow/lib/python/lib-dynload")
 	sys.path.append("~/tk8.6.6/unix")
 	
-import sync
-
-reload(sync)
+if platform.system() == "Linux":
+	import gd_unix as gd
+elif platform.system() == "Windows":
+	import gd_win as gd
+	
+reload(gd)
 	
 import Tkinter as tk
 import util
@@ -32,8 +35,8 @@ def closeWindow( _win ):
 
 root = tk.Tk()
 root.title('Sync Folder Tool')    
-root.minsize(width = 50, height = 50)
-root.maxsize(width = 1024, height = 512)
+root.minsize(width = 512, height = 128)
+root.maxsize(width = 512, height = 128)
 root.grid()  
 
 frm_local = tk.Frame(root)
@@ -63,10 +66,10 @@ txt_remotedirset.insert(tk.END, glob.globs["ONLINE_ROOT"])
 frm_btns = tk.Frame(root)
 frm_btns.pack()
 
-btn_push = tk.Button(frm_btns, text = 'Push', width = 30, command = lambda : sequence( gd.upsync( txt_localdir.get("1.0", tk.END), txt_localdir.get("1.0", tk.END).split('/')[-1] ) ) )
+btn_push = tk.Button(frm_btns, text = 'Push', width = 30, command = lambda : sequence( gd.upsync( txt_localdirset.get("1.0", tk.END), txt_localdirset.get("1.0", tk.END).split('/')[-1] ) ) )
 btn_push.pack(in_ = frm_btns, side = tk.RIGHT)
 
-btn_push = tk.Button(frm_btns, text = 'Pull', width = 30, command = lambda : gd.downsync( driveobj( txt_localdir.get("1.0", tk.END).split('/')[-1] ).calcID().getID(), txt_localdir.get("1.0", tk.END) ) )
+btn_push = tk.Button(frm_btns, text = 'Pull', width = 30, command = lambda : gd.downsync( driveobj( txt_remotedirset.get("1.0", tk.END).split('/')[-1] ).calcID().getID(), txt_remotedirset.get("1.0", tk.END) ) )
 btn_push.pack(in_ = frm_btns, side = tk.RIGHT)
 
 quitButton = tk.Button(root, text = 'Quit', command = quit)            
