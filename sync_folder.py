@@ -41,7 +41,11 @@ def push():
 	gd.upsync( '"' + local + '"', remote )
 	
 def pull():
-	gd.downsync( driveobj( txt_remotedirset.get("1.0", tk.END).split('/')[-1] ).calcID().getID(), txt_remotedirset.get("1.0", tk.END) )
+	local = strings.dirfmt(txt_localdirset.get("1.0", tk.END))
+	remote = strings.dirfmt(txt_remotedirset.get("1.0", tk.END))
+	id = gd.resolvePath( remote )
+	print "Pulling " + id + " to " + local
+	gd.downsync( id, local )
 
 root = tk.Tk()
 root.title('Sync Folder Tool')    

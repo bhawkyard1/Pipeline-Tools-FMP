@@ -1,2 +1,2 @@
-PROJECT_ROOT D:\Docs\Uni\work\year3\FMP\img
-ONLINE_ROOT img
+PROJECT_ROOT /home/i7620560/projects/p1_o
+ONLINE_ROOT p1_o
