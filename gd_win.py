@@ -41,7 +41,7 @@ def upsync( _local, _remote ):
 		print "Calling " + gdcall + ' mkdir ' + _remote
 		subprocess.Popen( gdcall + ' mkdir ' + _remote ).wait()
 		id = resolvePath( _remote )
-	cmd = gdcall + " sync upload " + _local + " " + id
+	cmd = gdcall + " sync upload --keep-local " + _local + " " + id
 	print "Calling " + cmd
 	subprocess.Popen( cmd ).wait()
 	
