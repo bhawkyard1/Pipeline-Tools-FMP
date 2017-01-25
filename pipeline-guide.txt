@@ -1,0 +1,87 @@
+The pipeline at the top level looks roughly like this:
+
+ ###########################
+ ###########################
+ ###                     ###        #########
+ ### PRODUCTION PIPELINE ### -----> ## UE4 ## -----> THE GAME
+ ###                     ###   ^    #########
+ ###########################   |
+ ###########################   |
+                               |
+                               |
+This bit here is the pipeline tool, and that is what this guide is for.
+
+
+#############
+## RUNNING ##
+#############
+
+To run the pipeline tool, double click on:
+
+	run.bat if you are on your laptop
+	run-labs-windows.bat if you are in the labs, on windows
+	run.sh if you are in the labs and on linux.
+
+A command line should open, and the pipeline tool. Keep the command
+line open, it helps you to see what is going on.
+
+
+##############
+## PROJECTS ##
+##############
+
+The production pipeline is organised like this:
+
+  PROJECT/
+    PRODUCTION/
+    APPROVAL/
+    IMPLEMENTATION/
+
+To CREATE a new project, type a path in the very top text box. 
+This folder should NOT exist yet, the tool will create it for you.
+Set your project to this path, by hitting 'Set Active Project'.
+Hit 'Create'.
+The top part of the tool should light up green.
+When the top part is green, the project you are working on exists.
+
+You can now push and pull the project, but not much will happen.
+We should make some ASSETS.
+
+
+############
+## ASSETS ##
+############
+
+To create an asset, we have to first give it a name. Once we
+have typed in a name, we need to click SET ACTIVE ASSET. If the
+asset already exists, the asset panel will turn green, if not,
+it will stay red.
+
+Hit CREATE to create an asset. Initially, it will live in the
+production folder. All of the files you use to make the asset
+should be stored in this folder.
+
+If you are happy with the asset, hit PROMOTE. APPROVAL is where
+we will test assets in-game, to see if they are ready.
+
+If an asset can be considered the final version, we can promote it
+again to IMPLEMENTATION. At this stage it is game-ready.
+
+
+#############
+## SYNCING ##
+#############
+
+The strength of this tool is its online syncing. The workflow
+for doing synchronised work with this tool is as follows:
+
+ ->Pull project.
+ ->Make changes, add assets etc.
+ ->Checkout assets which have been changed.
+   ->Only checked out assets will be synchronised.
+ ->Push project.
+
+
+
+
+
