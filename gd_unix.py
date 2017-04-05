@@ -33,10 +33,15 @@ def upsync( _local, _remote ):
 		fid = resolvePath( _remote )
 	cmd = "~/gdrive sync upload " + _local + " " + fid
 	print "Calling " + cmd
-	subprocess.Popen( [cmd], shell = True ).wait()
+	#subprocess.Popen( [cmd], shell = True ).wait()
 	
 	
 def downsync( _remote, _local ):
 	cmd = "~/gdrive sync download --keep-remote " + _remote + " " + _local
+	print "Calling " + cmd
+	subprocess.Popen( [cmd], shell = True ).wait()
+
+def query(fid):
+	cmd = "~/gdrive info " + fid
 	print "Calling " + cmd
 	subprocess.Popen( [cmd], shell = True ).wait()

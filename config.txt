@@ -1,2 +1,2 @@
-PROJECT_ROOT /home/i7620560/projects/p1_o
-ONLINE_ROOT p1_o
+PROJECT_ROOT D:/Program Files/Epic Games/Unreal Projects/P_502nd_West_002
+ONLINE_ROOT Production/Prototypes/Current/P_502nd_West_002

@@ -33,7 +33,14 @@ def resolvePath( _path ):
 		context = getChildren( id )
 	return id
 	
-def upsync( _local, _remote ):
+def upsync( _local, _remote, _localOrRemote, _deleteExtra ):
+	remoteArg = "--keep-remote"
+	if _localOrRemote.get() == 1:
+		remoteArg = "--keep-local"
+	extArg = ""
+	if _deleteExtra.get() == 1:
+		extArg = "--delete-extraneous "
+	
 	id = ""
 	try:
 		id = resolvePath( _remote )
@@ -41,10 +48,24 @@ def upsync( _local, _remote ):
 		print "Calling " + gdcall + ' mkdir ' + _remote
 		subprocess.Popen( gdcall + ' mkdir ' + _remote ).wait()
 		id = resolvePath( _remote )
-	cmd = gdcall + " sync upload --keep-local " + '"' + _local + '" ' + id
+	cmd = gdcall + " sync upload " + remoteArg + " " + extArg + '"' + _local + '" ' + id
+	print _localOrRemote.get()
 	print "Calling " + cmd
 	subprocess.Popen( cmd ).wait()
 	
-def downsync( _remote, _local ):
-	cmd = gdcall + " sync download --keep-remote " + _remote + " '" + _local + "'"
-	subprocess.Popen( cmd, shell = True ).wait()
+def downsync( _remote, _local, _localOrRemote, _deleteExtra ):
+	remoteArg = "--keep-remote"
+	if _localOrRemote.get() == 1:
+		remoteArg = "--keep-local"
+	extArg = ""
+	if _deleteExtra.get() == 1:
+		extArg = "--delete-extraneous"
+		
+	cmd = gdcall + " sync download " + remoteArg + " " + extArg + " " + _remote + ' "' + _local + '"'
+	print "Calling " + repr(cmd)
+	subprocess.Popen( cmd ).wait()
+
+def query(fid):
+	cmd = gdcall + " info " + fid
+	print "Calling " + cmd
+	subprocess.Popen( cmd ).wait()
